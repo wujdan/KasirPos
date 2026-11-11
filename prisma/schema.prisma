@@ -1,0 +1,318 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  CASHIER
+}
+
+enum PaymentMethod {
+  CASH
+  NON_CASH
+}
+
+enum SaleStatus {
+  COMPLETED
+  VOID
+}
+
+enum MovementType {
+  SALE
+  PURCHASE
+  ADJUSTMENT
+  RETURN
+  OPNAME
+}
+
+enum ShiftStatus {
+  OPEN
+  CLOSED
+}
+
+enum PurchaseStatus {
+  DRAFT
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+model Store {
+  id            Int      @id @default(autoincrement())
+  name          String
+  address       String   @default("")
+  phone         String   @default("")
+  currency      String   @default("IDR")
+  taxPercent    Int      @default(0)
+  receiptFooter String   @default("Terima kasih telah berbelanja")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Supplier {
+  id        Int        @id @default(autoincrement())
+  name      String
+  contact   String     @default("")
+  phone     String     @default("")
+  address   String     @default("")
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  purchases Purchase[]
+
+  @@unique([name])
+}
+
+model User {
+  id           Int         @id @default(autoincrement())
+  name         String
+  email        String      @unique
+  passwordHash String
+  role         Role        @default(CASHIER)
+  active       Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  sales        Sale[]
+  shifts       CashShift[]
+  movements    StockMovement[]
+  purchases     Purchase[]
+  auditLogs     AuditLog[]
+  returns       SaleReturn[]
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Product {
+  id         Int             @id @default(autoincrement())
+  sku        String          @unique
+  barcode    String?         @unique
+  name       String
+  categoryId Int?
+  category   Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  price      Int
+  cost       Int             @default(0)
+  stock      Int             @default(0)
+  minStock   Int             @default(0)
+  active     Boolean         @default(true)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  saleItems  SaleItem[]
+  movements  StockMovement[]
+  purchaseItems PurchaseItem[]
+  returnItems   SaleReturnItem[]
+
+  @@index([name])
+  @@index([categoryId])
+}
+
+model Sale {
+  id            Int           @id @default(autoincrement())
+  invoiceNo     String        @unique
+  userId        Int
+  user          User          @relation(fields: [userId], references: [id])
+  shiftId       Int?
+  shift         CashShift?    @relation(fields: [shiftId], references: [id], onDelete: SetNull)
+  subtotal      Int
+  discount      Int           @default(0)
+  tax           Int           @default(0)
+  total         Int
+  paid          Int
+  change        Int
+  paymentMethod PaymentMethod
+  status        SaleStatus    @default(COMPLETED)
+  note          String?
+  createdAt     DateTime      @default(now())
+  items         SaleItem[]
+  customerId    Int?
+  customer      Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  returns       SaleReturn[]
+
+  @@index([createdAt])
+  @@index([userId])
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String   @default("")
+  email     String   @default("")
+  note      String   @default("")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sales     Sale[]
+
+  @@index([name])
+  @@index([phone])
+}
+
+model SaleReturn {
+  id        Int              @id @default(autoincrement())
+  number    String           @unique
+  saleId    Int
+  sale      Sale             @relation(fields: [saleId], references: [id], onDelete: Restrict)
+  userId    Int
+  user      User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  shiftId   Int?
+  shift     CashShift?       @relation(fields: [shiftId], references: [id], onDelete: SetNull)
+  amount    Int
+  reason    String
+  note      String           @default("")
+  createdAt DateTime         @default(now())
+  items     SaleReturnItem[]
+
+  @@index([saleId])
+  @@index([createdAt])
+}
+
+model SaleReturnItem {
+  id          Int        @id @default(autoincrement())
+  returnId    Int
+  saleItemId  Int
+  productId   Int?
+  productName String
+  sku         String
+  qty         Int
+  amount      Int
+  restocked   Boolean    @default(false)
+  saleReturn  SaleReturn @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  saleItem    SaleItem   @relation(fields: [saleItemId], references: [id], onDelete: Restrict)
+  product     Product?   @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([saleItemId])
+}
+
+model SaleItem {
+  id          Int      @id @default(autoincrement())
+  saleId      Int
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId   Int?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productName String
+  sku         String
+  price       Int
+  cost        Int      @default(0)
+  qty         Int
+  discount    Int      @default(0)
+  subtotal    Int
+  returns     SaleReturnItem[]
+
+  @@index([saleId])
+  @@index([productId])
+}
+
+model StockMovement {
+  id          Int          @id @default(autoincrement())
+  productId   Int
+  product     Product      @relation(fields: [productId], references: [id], onDelete: Restrict)
+  type        MovementType
+  qty         Int
+  stockBefore Int
+  stockAfter  Int
+  reference   String?
+  note        String?
+  userId      Int?
+  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime     @default(now())
+
+  @@index([productId])
+  @@index([createdAt])
+}
+
+model CashShift {
+  id           Int        @id @default(autoincrement())
+  userId       Int
+  user         User       @relation(fields: [userId], references: [id])
+  openingCash  Int        @default(0)
+  closingCash  Int?
+  expectedCash Int?
+  difference   Int?
+  status       ShiftStatus @default(OPEN)
+  openedAt     DateTime   @default(now())
+  closedAt     DateTime?
+  sales        Sale[]
+  movements    CashMovement[]
+  returns      SaleReturn[]
+
+  @@index([userId])
+}
+
+model CashMovement {
+  id        Int      @id @default(autoincrement())
+  shiftId   Int
+  shift     CashShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  type      String
+  amount    Int
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([shiftId])
+}
+
+model Expense {
+  id        Int      @id @default(autoincrement())
+  title     String
+  amount    Int
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+model Purchase {
+  id         Int             @id @default(autoincrement())
+  number     String          @unique
+  supplierId Int?
+  supplier   Supplier?       @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  userId     Int
+  user       User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  status     PurchaseStatus  @default(DRAFT)
+  total      Int
+  note       String?
+  createdAt  DateTime        @default(now())
+  receivedAt DateTime?
+  items      PurchaseItem[]
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+model PurchaseItem {
+  id          Int      @id @default(autoincrement())
+  purchaseId  Int
+  purchase    Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  productName String
+  sku         String
+  qty         Int
+  receivedQty Int      @default(0)
+  unitCost    Int
+  subtotal    Int
+
+  @@index([purchaseId])
+  @@index([productId])
+}

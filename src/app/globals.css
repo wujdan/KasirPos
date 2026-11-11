@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+}
+
+@theme inline {
+  --font-sans: "Segoe UI", Arial, sans-serif;
+  --font-mono: Consolas, monospace;
+}
+
+body {
+  background: #f5f6f8;
+  color: #111827;
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+}
+
+* {
+  scrollbar-width: thin;
+}
+
+@media print {
+  body {
+    background: #ffffff;
+    color: #000000;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 80mm !important;
+  }
+
+  @page {
+    margin: 6mm;
+  }
+}
