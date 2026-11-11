@@ -103,7 +103,7 @@ function NavLinks({ user, mobile }: { user: SessionUser; mobile?: boolean }) {
   );
 }
 
-export function Sidebar({ user }: { user: SessionUser }) {
+export function Sidebar({ user, version }: { user: SessionUser; version: string }) {
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
@@ -113,6 +113,7 @@ export function Sidebar({ user }: { user: SessionUser }) {
               J
             </span>
             <span className="font-bold text-slate-900">JualIn POS</span>
+            <span className="text-[10px] font-medium text-slate-400">v{version}</span>
           </Link>
           <form action={logout}>
             <button
@@ -166,6 +167,7 @@ export function Sidebar({ user }: { user: SessionUser }) {
               </button>
             </form>
           </div>
+          <p className="mt-2 text-center text-[11px] text-slate-400">JualIn POS v{version}</p>
         </div>
       </aside>
     </>

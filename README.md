@@ -2,6 +2,7 @@
 
 Aplikasi kasir (POS) berbasis web untuk UMKM dan toko retail: transaksi, stok, pembelian, retur, shift kasir, laporan, audit, dan backup SQLite.
 
+[![Versi](https://img.shields.io/badge/versi-0.1.0-2ea44f)](CHANGELOG.md)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19-087ea4?logo=react&logoColor=white)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -10,7 +11,7 @@ Aplikasi kasir (POS) berbasis web untuk UMKM dan toko retail: transaksi, stok, p
 
 > Aplikasi ini berjalan di server Node.js dan membutuhkan database yang dikonfigurasi. Mode offline-first Android dari rancangan awal **tidak** menjadi sifat aplikasi web ini.
 
-**Daftar isi:** [Fitur](#fitur) · [Hak akses](#hak-akses) · [Teknologi](#teknologi) · [Prasyarat](#prasyarat) · [Instalasi](#instalasi-lokal) · [Akun demo](#akun-demo) · [Alur pertama](#alur-pemakaian-pertama) · [Perintah](#perintah) · [Struktur](#struktur-project) · [Environment](#konfigurasi-environment) · [Aturan bisnis](#aturan-bisnis-penting) · [Produksi](#build--produksi) · [Troubleshooting](#troubleshooting) · [Batasan](#batasan-yang-diketahui) · [Lisensi](#lisensi)
+**Daftar isi:** [Fitur](#fitur) · [Hak akses](#hak-akses) · [Teknologi](#teknologi) · [Prasyarat](#prasyarat) · [Instalasi](#instalasi-lokal) · [Akun demo](#akun-demo) · [Alur pertama](#alur-pemakaian-pertama) · [Perintah](#perintah) · [Struktur](#struktur-project) · [Environment](#konfigurasi-environment) · [Aturan bisnis](#aturan-bisnis-penting) · [Produksi](#build--produksi) · [Troubleshooting](#troubleshooting) · [Batasan](#batasan-yang-diketahui) · [Versi](#versi) · [Lisensi](#lisensi)
 
 ## Fitur
 
@@ -197,10 +198,13 @@ Prisma CLI membaca konfigurasi dari `prisma7.config.ts` (schema, folder migrasi,
 │  │  ├─ pos.ts                # Tipe & perhitungan keranjang
 │  │  ├─ sqlite-path.ts        # Resolusi path DB untuk backup
 │  │  ├─ format.ts             # Format Rupiah & tanggal
-│  │  └─ form.ts               # Tipe state form
+│  │  ├─ form.ts               # Tipe state form
+│  │  └─ version.ts            # Versi aplikasi dari package.json
 │  └─ generated/prisma/        # Prisma Client hasil generate (gitignored)
 ├─ prisma7.config.ts           # Konfigurasi Prisma CLI
 ├─ next.config.ts              # serverExternalPackages + Tailwind via Turbopack
+├─ CHANGELOG.md
+├─ LICENSE
 ├─ .env.example
 └─ package.json
 ```
@@ -310,6 +314,18 @@ Rencana lengkap dan aturan bisnis terperinci ada di [Rancangan Sistem JualIn POS
 3. Jangan commit `.env`, `*.db`, `node_modules`, atau `src/generated/prisma`.
 4. Ajukan pull request dengan deskripsi perubahan dan langkah pengujiannya.
 
+## Versi
+
+Versi aplikasi saat ini **0.1.0**, diambil dari `package.json` dan ditampilkan di footer sidebar. Riwayat perubahan lengkap ada di [CHANGELOG.md](./CHANGELOG.md).
+
+Proyek mengikuti [Semantic Versioning](https://semver.org/lang/id/):
+
+- **MAJOR** — perubahan yang tidak kompatibel, mis. skema database yang memerlukan migrasi destruktif.
+- **MINOR** — fitur baru yang tetap kompatibel.
+- **PATCH** — perbaikan bug atau penyesuaian kecil.
+
+Saat merilis versi baru: perbarui `version` di `package.json`, tambahkan entri di `CHANGELOG.md`, lalu buat tag Git `vX.Y.Z`.
+
 ## Lisensi
 
-Belum ada lisensi eksplisit. Tanpa berkas `LICENSE`, hak cipta tetap pada pemilik proyek (all rights reserved). Tambahkan `LICENSE` bila ingin membuka penggunaan untuk pihak lain.
+Proyek ini dilisensikan di bawah [MIT License](./LICENSE) © 2026 Wujdan.
